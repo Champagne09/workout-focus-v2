@@ -1089,9 +1089,11 @@ const INITIAL_STATE = {
   tab: 'home',
   sessions: [],
   activeSession: null,
+  pendingSession: null,
   mealLog:   {},
   waterLog:  {},
   nutritionGoals: { calories: 3200, protein: 200, carbs: 400, fat: 80, water: 8 },
+  customFoods: [],
   muscleLog: {},
   weightLog:   [],
   measurements:[],
@@ -1103,6 +1105,10 @@ const INITIAL_STATE = {
 function reducer(state, action) {
   switch(action.type) {
     case 'SET_TAB': return { ...state, tab: action.tab };
+    case 'SET_PENDING_SESSION': return { ...state, pendingSession: action.session };
+    case 'CLEAR_PENDING_SESSION': return { ...state, pendingSession: null };
+    case 'SAVE_CUSTOM_FOOD': return { ...state, customFoods: [...(state.customFoods||[]), action.food] };
+    case 'DELETE_CUSTOM_FOOD': return { ...state, customFoods: (state.customFoods||[]).filter((_,i)=>i!==action.idx) };
 
     case 'START_SESSION': {
       const session = {
@@ -1381,7 +1387,10 @@ function Home({ state, dispatch }) {
           )}
         </div>
         <div className="hero-actions">
-          <button className="btn btn-primary" onClick={() => dispatch({type:'SET_TAB',tab:'workout'})}>
+          <button className="btn btn-primary" onClick={() => {
+            if (todayProgram) dispatch({ type:'SET_PENDING_SESSION', session:{ name: todayProgram.name, exercises: todayProgram.exercises, muscleGroup: todayProgram.type || 'mixed' }});
+            dispatch({type:'SET_TAB',tab:'workout'});
+          }}>
             Start Session
           </button>
           <button className="btn btn-secondary" onClick={() => dispatch({type:'SET_TAB',tab:'nutrition'})}>
@@ -1434,7 +1443,10 @@ function Home({ state, dispatch }) {
               <div style={{fontSize:20,fontWeight:800,color:'var(--green2)',letterSpacing:'-0.3px'}}>{todayProgram.name}</div>
               <div style={{fontSize:13,color:'var(--muted)',marginTop:3}}>{todayProgram.focus}</div>
             </div>
-            <button className="btn btn-primary" onClick={() => dispatch({type:'SET_TAB',tab:'workout'})}>
+            <button className="btn btn-primary" onClick={() => {
+              dispatch({ type:'SET_PENDING_SESSION', session:{ name: todayProgram.name, exercises: todayProgram.exercises, muscleGroup: todayProgram.type || 'mixed' }});
+              dispatch({type:'SET_TAB',tab:'workout'});
+            }}>
               Train Now
             </button>
           </div>
@@ -1482,6 +1494,16 @@ function WorkoutTracker({ state, dispatch }) {
   const [sessionName, setSessionName] = useState('');
   const [addModal, setAddModal] = useState(false);
   const [customEx, setCustomEx] = useState('');
+  const [presetBanner, setPresetBanner] = useState(null);
+
+  useEffect(() => {
+    if (state.pendingSession && !state.activeSession) {
+      setSessionName(state.pendingSession.name);
+      setSelectedExercises(state.pendingSession.exercises);
+      setPresetBanner(state.pendingSession.name);
+      dispatch({ type: 'CLEAR_PENDING_SESSION' });
+    }
+  }, [state.pendingSession]);
 
   const toggleEx = (name) => {
     setSelectedExercises(prev =>
@@ -1494,6 +1516,7 @@ function WorkoutTracker({ state, dispatch }) {
     dispatch({ type:'START_SESSION', name: sessionName || `${selectedMuscle.charAt(0).toUpperCase()+selectedMuscle.slice(1)} Day`, exercises: selectedExercises, muscleGroup: selectedMuscle });
     setSelectedExercises([]);
     setSessionName('');
+    setPresetBanner(null);
   };
 
   const updateSet = (exIdx, setIdx, field, value) =>
@@ -1555,6 +1578,17 @@ function WorkoutTracker({ state, dispatch }) {
           <div className="page-sub">Build your session, log sets and reps</div>
         </div>
       </div>
+
+      {presetBanner && (
+        <div style={{background:'var(--green-dim)',border:'1px solid var(--green3)',borderRadius:'var(--radius)',padding:'14px 18px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--green2)',marginBottom:3}}>Today's Recommended Split</div>
+            <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{presetBanner} — pre-loaded below</div>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>Add or remove exercises freely — only today is affected</div>
+          </div>
+          <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)'}} onClick={()=>{setPresetBanner(null);setSelectedExercises([]);setSessionName('');}}>Clear</button>
+        </div>
+      )}
 
       <div className="grid-2" style={{marginBottom:24,gap:24}}>
         <div>
@@ -1637,22 +1671,40 @@ function WorkoutTracker({ state, dispatch }) {
 
 /* ── COMPONENT: NUTRITION ───────────────────────────── */
 function Nutrition({ state, dispatch }) {
-  const [addModal, setAddModal]   = useState(null);
+  const [addModal, setAddModal]     = useState(null);
   const [customItem, setCustomItem] = useState({ name:'', cal:'', p:'', c:'', f:'' });
   const [goalsModal, setGoalsModal] = useState(false);
   const [goalsDraft, setGoalsDraft] = useState(state.nutritionGoals);
+  const [foodSearch, setFoodSearch] = useState('');
 
   const todayMeals = state.mealLog[TODAY] || { breakfast:[], lunch:[], dinner:[], snacks:[] };
   const macros = sumMacros(todayMeals);
   const water  = state.waterLog[TODAY] || 0;
   const ng     = state.nutritionGoals;
+  const customFoods = state.customFoods || [];
 
-  const logPreset = (meal, item) => { dispatch({ type:'LOG_MEAL', meal, item }); setAddModal(null); };
+  const logPreset = (meal, item) => { dispatch({ type:'LOG_MEAL', meal, item }); setAddModal(null); setFoodSearch(''); };
   const logCustom = (meal) => {
-    const item = { name: customItem.name||'Custom', cal:+customItem.cal||0, p:+customItem.p||0, c:+customItem.c||0, f:+customItem.f||0 };
+    if (!customItem.name.trim()) return;
+    const item = { name: customItem.name, cal:+customItem.cal||0, p:+customItem.p||0, c:+customItem.c||0, f:+customItem.f||0 };
     dispatch({ type:'LOG_MEAL', meal, item });
     setCustomItem({ name:'', cal:'', p:'', c:'', f:'' });
     setAddModal(null);
+    setFoodSearch('');
+  };
+  const saveAndLogCustom = (meal) => {
+    if (!customItem.name.trim()) return;
+    const item = { name: customItem.name, cal:+customItem.cal||0, p:+customItem.p||0, c:+customItem.c||0, f:+customItem.f||0 };
+    dispatch({ type:'SAVE_CUSTOM_FOOD', food: item });
+    dispatch({ type:'LOG_MEAL', meal, item });
+    setCustomItem({ name:'', cal:'', p:'', c:'', f:'' });
+    setAddModal(null);
+    setFoodSearch('');
+  };
+
+  const filterFoods = (items) => {
+    if (!foodSearch.trim()) return items;
+    return items.filter(i => i.name.toLowerCase().includes(foodSearch.toLowerCase()));
   };
 
   const MacroRing = () => {
@@ -1757,21 +1809,74 @@ function Nutrition({ state, dispatch }) {
       })}
 
       {addModal && (
-        <Modal title={`Add to ${addModal.charAt(0).toUpperCase()+addModal.slice(1)}`} onClose={()=>setAddModal(null)}>
-          <div className="sec-hdr"><div className="sec-label">Quick Add</div><div className="sec-line"/></div>
-          <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
-            {MEAL_PRESETS[addModal] && MEAL_PRESETS[addModal].map((item,i) => (
-              <button key={i} className="ex-item" style={{width:'100%',textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
-                <span style={{color:'var(--text)'}}>{item.name}</span>
-                <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
-              </button>
-            ))}
+        <Modal title={`Add to ${addModal.charAt(0).toUpperCase()+addModal.slice(1)}`} onClose={()=>{ setAddModal(null); setFoodSearch(''); }}>
+
+          {/* Search */}
+          <input
+            className="form-input"
+            placeholder="Search all foods..."
+            value={foodSearch}
+            onChange={e=>setFoodSearch(e.target.value)}
+            style={{marginBottom:16}}
+            autoFocus
+          />
+
+          <div style={{maxHeight:340,overflowY:'auto',marginBottom:16,display:'flex',flexDirection:'column',gap:6}}>
+
+            {/* Saved Recipes */}
+            {customFoods.length > 0 && (
+              <>
+                <div className="sec-hdr" style={{marginBottom:4}}><div className="sec-label" style={{color:'var(--green2)'}}>My Saved Recipes</div><div className="sec-line"/></div>
+                {filterFoods(customFoods).map((item,i) => (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:6}}>
+                    <button className="ex-item" style={{flex:1,textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
+                      <span style={{color:'var(--text)'}}>{item.name}</span>
+                      <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
+                    </button>
+                    <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)',flexShrink:0}} onClick={()=>dispatch({type:'DELETE_CUSTOM_FOOD',idx:i})} aria-label="Delete saved food">x</button>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Recommended for this meal */}
+            {filterFoods(MEAL_PRESETS[addModal]||[]).length > 0 && (
+              <>
+                <div className="sec-hdr" style={{marginBottom:4}}><div className="sec-label">Recommended — {addModal}</div><div className="sec-line"/></div>
+                {filterFoods(MEAL_PRESETS[addModal]||[]).map((item,i) => (
+                  <button key={i} className="ex-item" style={{width:'100%',textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
+                    <span style={{color:'var(--text)'}}>{item.name}</span>
+                    <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
+                  </button>
+                ))}
+              </>
+            )}
+
+            {/* All other meal categories */}
+            {['breakfast','lunch','dinner','snacks'].filter(m=>m!==addModal).map(mealType => {
+              const filtered = filterFoods(MEAL_PRESETS[mealType]||[]);
+              if (filtered.length === 0) return null;
+              return (
+                <React.Fragment key={mealType}>
+                  <div className="sec-hdr" style={{marginBottom:4}}><div className="sec-label">{mealType}</div><div className="sec-line"/></div>
+                  {filtered.map((item,i) => (
+                    <button key={i} className="ex-item" style={{width:'100%',textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
+                      <span style={{color:'var(--text)'}}>{item.name}</span>
+                      <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
+                    </button>
+                  ))}
+                </React.Fragment>
+              );
+            })}
+
           </div>
-          <div className="sec-hdr"><div className="sec-label">Custom Entry</div><div className="sec-line"/></div>
+
+          {/* Custom Entry */}
+          <div className="sec-hdr" style={{marginBottom:10}}><div className="sec-label">Custom Entry</div><div className="sec-line"/></div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
             <div className="form-group" style={{gridColumn:'1/-1'}}>
               <label className="form-label">Food Name</label>
-              <input className="form-input" placeholder="e.g. Grilled Chicken..." value={customItem.name} onChange={e=>setCustomItem(p=>({...p,name:e.target.value}))}/>
+              <input className="form-input" placeholder="e.g. Jerk Chicken Bowl..." value={customItem.name} onChange={e=>setCustomItem(p=>({...p,name:e.target.value}))}/>
             </div>
             {[['cal','Calories'],['p','Protein (g)'],['c','Carbs (g)'],['f','Fat (g)']].map(([k,lbl])=>(
               <div key={k} className="form-group">
@@ -1780,7 +1885,10 @@ function Nutrition({ state, dispatch }) {
               </div>
             ))}
           </div>
-          <button className="btn btn-primary btn-full" style={{marginTop:16}} onClick={()=>logCustom(addModal)}>Add Custom Item</button>
+          <div style={{display:'flex',gap:10,marginTop:14}}>
+            <button className="btn btn-secondary" style={{flex:1}} onClick={()=>logCustom(addModal)}>Log Only</button>
+            <button className="btn btn-primary" style={{flex:2}} onClick={()=>saveAndLogCustom(addModal)}>Save Recipe &amp; Log</button>
+          </div>
         </Modal>
       )}
 
