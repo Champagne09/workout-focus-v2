@@ -899,7 +899,7 @@ select.form-input option { background: var(--surface2); }
   50%     { box-shadow: 0 0 0 8px rgba(78,139,71,0); }
 }
 
-/* ── EXERCISE ICON BUTTONS (▶ / 📈) ──────────────── */
+/* ── EXERCISE ICON BUTTONS (demo / history) ─────── */
 .ex-icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 26px; height: 26px;
@@ -949,21 +949,23 @@ select.form-input option { background: var(--surface2); }
 /* ── ACHIEVEMENTS ───────────────────────────────── */
 .achievement-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 10px;
 }
 .achievement-badge {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; padding: 14px 8px;
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(78,139,71,0.05) 100%);
-  border: 2px solid var(--border);
+  gap: 4px; padding: 16px 10px;
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(78,139,71,0.04) 100%);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
   border-radius: var(--radius);
   text-align: center;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.achievement-badge:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,139,71,0.15); }
-.achievement-emoji { font-size: 32px; line-height: 1; }
-.achievement-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; }
+.achievement-badge:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+.achievement-value { font-size: 26px; font-weight: 800; font-family: var(--mono); line-height: 1; }
+.achievement-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.75; }
+.achievement-label { font-size: 11px; font-weight: 600; color: var(--text2); margin-top: 4px; }
 
 /* ── PHOTO JOURNAL ──────────────────────────────── */
 .photo-grid {
@@ -1473,31 +1475,31 @@ const computeAchievements = (state) => {
   const log = state.strengthLog || {};
   const badges = [];
   // Session-based
-  if (sessions.length >= 1)   badges.push({ id:'first-session', label:'First Session', emoji:'🎯', color:'#4E8B47' });
-  if (sessions.length >= 10)  badges.push({ id:'10-sessions',   label:'10 Sessions',   emoji:'🔥', color:'#E07520' });
-  if (sessions.length >= 25)  badges.push({ id:'25-sessions',   label:'25 Sessions',   emoji:'💪', color:'#2A6FBA' });
-  if (sessions.length >= 50)  badges.push({ id:'50-sessions',   label:'50 Sessions',   emoji:'🏆', color:'#C8891A' });
-  if (sessions.length >= 100) badges.push({ id:'100-sessions',  label:'Century Club',  emoji:'👑', color:'#9B30FF' });
+  if (sessions.length >= 1)   badges.push({ id:'first-session', label:'First Session', type:'session', value:'1',   color:'#4E8B47' });
+  if (sessions.length >= 10)  badges.push({ id:'10-sessions',   label:'10 Sessions',   type:'session', value:'10',  color:'#E07520' });
+  if (sessions.length >= 25)  badges.push({ id:'25-sessions',   label:'25 Sessions',   type:'session', value:'25',  color:'#2A6FBA' });
+  if (sessions.length >= 50)  badges.push({ id:'50-sessions',   label:'50 Sessions',   type:'session', value:'50',  color:'#C8891A' });
+  if (sessions.length >= 100) badges.push({ id:'100-sessions',  label:'Century Club',  type:'session', value:'100', color:'#9B30FF' });
   // Volume-based
   const totalSets = sessions.reduce((a,s)=>a + s.exercises.reduce((b,e)=>b+e.sets.length,0), 0);
-  if (totalSets >= 100)  badges.push({ id:'100-sets',  label:'100 Sets Logged',  emoji:'📊', color:'#4E8B47' });
-  if (totalSets >= 500)  badges.push({ id:'500-sets',  label:'500 Sets Logged',  emoji:'📈', color:'#2A6FBA' });
-  if (totalSets >= 1000) badges.push({ id:'1000-sets', label:'1,000 Sets',       emoji:'🚀', color:'#E07520' });
+  if (totalSets >= 100)  badges.push({ id:'100-sets',  label:'100 Sets',   type:'volume', value:'100',  color:'#4E8B47' });
+  if (totalSets >= 500)  badges.push({ id:'500-sets',  label:'500 Sets',   type:'volume', value:'500',  color:'#2A6FBA' });
+  if (totalSets >= 1000) badges.push({ id:'1000-sets', label:'1,000 Sets', type:'volume', value:'1K',   color:'#E07520' });
   // Strength PRs
   const benchPR = (getAllTimePR(log, 'Bench Press')||{}).weight || 0;
-  if (benchPR >= 135) badges.push({ id:'bench-135', label:'135 lb Bench', emoji:'🏋️', color:'#4E8B47' });
-  if (benchPR >= 185) badges.push({ id:'bench-185', label:'185 lb Bench', emoji:'🏋️', color:'#C8891A' });
-  if (benchPR >= 225) badges.push({ id:'bench-225', label:'2 Plate Bench', emoji:'🏆', color:'#E74C3C' });
+  if (benchPR >= 135) badges.push({ id:'bench-135', label:'135 lb Bench', type:'strength', value:'135', color:'#4E8B47' });
+  if (benchPR >= 185) badges.push({ id:'bench-185', label:'185 lb Bench', type:'strength', value:'185', color:'#C8891A' });
+  if (benchPR >= 225) badges.push({ id:'bench-225', label:'2 Plate Bench', type:'strength', value:'225', color:'#E74C3C' });
   const squatPR = (getAllTimePR(log, 'Back Squat')||{}).weight || 0;
-  if (squatPR >= 225) badges.push({ id:'squat-225', label:'225 lb Squat', emoji:'🦵', color:'#4E8B47' });
-  if (squatPR >= 315) badges.push({ id:'squat-315', label:'3 Plate Squat', emoji:'🦵', color:'#C8891A' });
+  if (squatPR >= 225) badges.push({ id:'squat-225', label:'225 lb Squat', type:'strength', value:'225', color:'#4E8B47' });
+  if (squatPR >= 315) badges.push({ id:'squat-315', label:'3 Plate Squat', type:'strength', value:'315', color:'#C8891A' });
   const dlPR = (getAllTimePR(log, 'Deadlift')||{}).weight || 0;
-  if (dlPR >= 315) badges.push({ id:'dl-315', label:'3 Plate Deadlift', emoji:'🪨', color:'#4E8B47' });
-  if (dlPR >= 405) badges.push({ id:'dl-405', label:'4 Plate Deadlift', emoji:'🪨', color:'#C8891A' });
+  if (dlPR >= 315) badges.push({ id:'dl-315', label:'3 Plate Deadlift', type:'strength', value:'315', color:'#4E8B47' });
+  if (dlPR >= 405) badges.push({ id:'dl-405', label:'4 Plate Deadlift', type:'strength', value:'405', color:'#C8891A' });
   // Streak
   const dates = [...new Set(sessions.map(s=>s.date))].sort();
-  if (dates.length >= 7)  badges.push({ id:'streak-7',  label:'7-Day Active',  emoji:'⚡', color:'#4E8B47' });
-  if (dates.length >= 30) badges.push({ id:'streak-30', label:'30-Day Active', emoji:'🌟', color:'#C8891A' });
+  if (dates.length >= 7)  badges.push({ id:'streak-7',  label:'7-Day Active',  type:'streak', value:'7',  color:'#4E8B47' });
+  if (dates.length >= 30) badges.push({ id:'streak-30', label:'30-Day Active', type:'streak', value:'30', color:'#C8891A' });
   return badges;
 };
 
@@ -1626,8 +1628,8 @@ function RestTimer({ seconds, onClose, onChangePref }) {
         </div>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:6}}>
-        <button className="btn btn-ghost btn-sm" onClick={()=>setRemaining(seconds)} style={{padding:'4px 10px',fontSize:11}}>↻</button>
-        <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'4px 10px',fontSize:11,color:'var(--muted)'}}>×</button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>setRemaining(seconds)} style={{padding:'4px 10px',fontSize:11,letterSpacing:1}}>RESET</button>
+        <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'4px 10px',fontSize:11,color:'var(--muted)',letterSpacing:1}}>CLOSE</button>
       </div>
     </div>
   );
@@ -1943,7 +1945,7 @@ function ActiveSessionView({ state, dispatch, updateSet }) {
         if (!ex.sets[j].weight && !ex.sets[j].reps) {
           if (parsed.weight != null) updateSet(i, j, 'weight', String(parsed.weight));
           if (parsed.reps != null) updateSet(i, j, 'reps', String(parsed.reps));
-          setVoiceMsg(`✓ Logged ${parsed.weight ?? '?'} × ${parsed.reps ?? '?'} on ${ex.name}`);
+          setVoiceMsg(`Logged ${parsed.weight ?? '?'} × ${parsed.reps ?? '?'} on ${ex.name}`);
           setTimeout(()=>setVoiceMsg(''), 2500);
           startRest();
           return;
@@ -1970,7 +1972,7 @@ function ActiveSessionView({ state, dispatch, updateSet }) {
         </div>
         <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
           <button className={`btn btn-sm ${state.gymMode?'btn-primary':'btn-secondary'}`} onClick={()=>dispatch({type:'TOGGLE_GYM_MODE'})} title="Toggle big-button gym mode">
-            {state.gymMode ? '🏋️ Gym Mode' : 'Gym Mode'}
+            Gym Mode{state.gymMode ? ' · On' : ''}
           </button>
           <VoiceButton onResult={handleVoice}/>
           <button className="btn btn-danger btn-sm" onClick={() => dispatch({type:'DISCARD_SESSION'})}>Discard</button>
@@ -1994,8 +1996,12 @@ function ActiveSessionView({ state, dispatch, updateSet }) {
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
                   <span style={{fontWeight:700,fontSize:15,color:'var(--text)'}}>{ex.name}</span>
-                  <a href={demoUrl} target="_blank" rel="noopener" className="ex-icon-btn" title="Watch form demo" aria-label="Form demo">▶</a>
-                  <button className="ex-icon-btn" onClick={()=>setHistoryEx(ex.name)} title="Exercise history" aria-label="Exercise history">📈</button>
+                  <a href={demoUrl} target="_blank" rel="noopener" className="ex-icon-btn" title="Watch form demo" aria-label="Form demo">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>
+                  </a>
+                  <button className="ex-icon-btn" onClick={()=>setHistoryEx(ex.name)} title="Exercise history" aria-label="Exercise history">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+                  </button>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4,flexWrap:'wrap'}}>
                   <span className="muscle-tag">{ex.muscle}</span>
@@ -2031,7 +2037,7 @@ function ActiveSessionView({ state, dispatch, updateSet }) {
                       <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder={suggested ? String(suggested) : '0'} value={set.weight} onChange={e=>updateSet(exIdx,setIdx,'weight',e.target.value)} aria-label={`Exercise ${exIdx+1} set ${setIdx+1} weight`}/>
                       <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder={last ? String(last.reps) : '0'} value={set.reps}   onChange={e=>updateSet(exIdx,setIdx,'reps',e.target.value)}   aria-label={`Exercise ${exIdx+1} set ${setIdx+1} reps`}/>
                       <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="—" min="1" max="10" value={set.rpe||''} onChange={e=>updateSet(exIdx,setIdx,'rpe',e.target.value)} aria-label="RPE 1-10"/>
-                      <button className={`btn btn-sm ${set.done?'btn-primary':'btn-secondary'}`} style={{padding:'4px 8px',minWidth:30}} onClick={() => markSetDone(exIdx, setIdx)} aria-label="Mark set done" title="Mark done & start rest">{set.done ? '✓' : '○'}</button>
+                      <button className={`btn btn-sm ${set.done?'btn-primary':'btn-secondary'}`} style={{padding:'4px 10px',minWidth:36,fontSize:11,letterSpacing:1}} onClick={() => markSetDone(exIdx, setIdx)} aria-label="Mark set done" title="Mark done & start rest">{set.done ? 'DONE' : 'LOG'}</button>
                     </div>
                   ))}
                 </>
@@ -2084,7 +2090,7 @@ function BigSetRow({ set, setIdx, suggested, onChange, onDone }) {
         </div>
       </div>
       <button className={`big-set-done ${set.done?'done':''}`} onClick={onDone} disabled={!set.weight || !set.reps}>
-        {set.done ? '✓ DONE' : 'TAP TO LOG'}
+        {set.done ? 'DONE' : 'TAP TO LOG'}
       </button>
     </div>
   );
@@ -3741,7 +3747,7 @@ function AchievementsSection({ state }) {
   if (!badges.length) {
     return (
       <div className="card" style={{marginBottom:24,textAlign:'center',padding:'32px 20px'}}>
-        <div style={{fontSize:36,marginBottom:8,opacity:0.5}}>🏆</div>
+        <div className="card-title" style={{marginBottom:6}}>Achievements</div>
         <div style={{fontSize:14,color:'var(--muted)'}}>Log your first session to start earning achievements</div>
       </div>
     );
@@ -3754,7 +3760,8 @@ function AchievementsSection({ state }) {
       <div className="achievement-grid">
         {badges.map(b => (
           <div key={b.id} className="achievement-badge" style={{borderColor: b.color}}>
-            <div className="achievement-emoji">{b.emoji}</div>
+            <div className="achievement-value" style={{color: b.color}}>{b.value}</div>
+            <div className="achievement-type" style={{color: b.color}}>{b.type}</div>
             <div className="achievement-label">{b.label}</div>
           </div>
         ))}
