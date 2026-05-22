@@ -845,6 +845,107 @@ select.form-input option { background: var(--surface2); }
   0%,100% { opacity: 1; } 50% { opacity: 0.4; }
 }
 
+/* ── REST TIMER ─────────────────────────────────── */
+.rest-timer {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0e0e0e 100%);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 10px 14px 10px 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(78,139,71,0.25);
+  z-index: 200;
+  max-width: 360px;
+  animation: timerSlide 0.25s ease-out;
+}
+.rest-timer.done {
+  box-shadow: 0 10px 40px rgba(224,117,32,0.45), 0 0 0 1px rgba(224,117,32,0.5);
+  animation: timerSlide 0.25s ease-out, timerDonePulse 0.9s ease-in-out 3;
+}
+@keyframes timerSlide { from { transform: translateY(120%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes timerDonePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+.rest-timer-ring { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.rest-timer-time {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-weight: 800; font-size: 13px; color: #fff;
+}
+.rest-chip {
+  padding: 3px 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px; font-size: 10px; font-weight: 700; color: #ccc; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.rest-chip:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.rest-chip.active { background: var(--green); color: #fff; border-color: var(--green2); }
+
+/* ── VOICE BUTTON ───────────────────────────────── */
+.voice-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s, transform 0.1s;
+}
+.voice-btn:hover { background: var(--surface3); color: var(--green2); }
+.voice-btn.listening {
+  background: var(--green);
+  color: #fff;
+  animation: voicePulse 1s ease-in-out infinite;
+}
+@keyframes voicePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(78,139,71,0.6); }
+  50%     { box-shadow: 0 0 0 8px rgba(78,139,71,0); }
+}
+
+/* ── EXERCISE ICON BUTTONS (▶ / 📈) ──────────────── */
+.ex-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 50%; font-size: 11px; cursor: pointer; text-decoration: none;
+  color: var(--text2); transition: background 0.15s, transform 0.1s;
+}
+.ex-icon-btn:hover { background: var(--green-dim); border-color: var(--green3); transform: scale(1.05); }
+
+.set-row.done { background: var(--green-dim); border-radius: 6px; }
+
+/* ── GYM MODE BIG SET ROW ───────────────────────── */
+.big-set-row {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.big-set-row.done { background: var(--green-dim); border-radius: 8px; padding: 14px 12px; }
+.big-set-num { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: var(--muted); }
+.big-set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.big-set-col { display: flex; flex-direction: column; gap: 6px; }
+.big-set-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+.big-set-ctl { display: grid; grid-template-columns: 48px 1fr 48px; gap: 8px; }
+.big-set-btn {
+  height: 56px; border-radius: 12px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  font-size: 28px; font-weight: 800; color: var(--text);
+  cursor: pointer; transition: background 0.15s, transform 0.05s;
+}
+.big-set-btn:active { transform: scale(0.94); background: var(--surface3); }
+.big-set-input {
+  height: 56px; text-align: center; font-size: 26px; font-weight: 800; font-family: var(--mono);
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
+  color: var(--text); width: 100%; box-sizing: border-box;
+}
+.big-set-input:focus { outline: none; border-color: var(--green); }
+.big-set-done {
+  height: 52px; border-radius: 12px; width: 100%;
+  background: var(--green); color: #fff;
+  font-size: 14px; font-weight: 800; letter-spacing: 2px;
+  border: none; cursor: pointer; transition: background 0.15s, transform 0.05s;
+}
+.big-set-done:disabled { background: var(--surface3); color: var(--muted); cursor: not-allowed; }
+.big-set-done.done { background: var(--green3); }
+.big-set-done:active:not(:disabled) { transform: scale(0.98); }
+
 /* ── RESPONSIVE (PHONE) ─────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { display: none; }
@@ -904,6 +1005,10 @@ select.form-input option { background: var(--surface2); }
   .btn { min-height: 44px; }
   .form-input { min-height: 44px; font-size: 16px; /* prevents iOS zoom on focus */ }
   select.form-input { font-size: 16px; }
+  .rest-timer {
+    left: 12px; right: 12px; bottom: calc(72px + env(safe-area-inset-bottom));
+    max-width: none;
+  }
 }
 @media (min-width: 769px) {
   .mobile-nav { display: none; }
@@ -1099,6 +1204,8 @@ const INITIAL_STATE = {
   measurements:[],
   strengthLog: {},
   goals: { targetWeight: '180', targetBodyFat: '', targetBench: '', targetSquat: '', targetDeadlift: '' },
+  restPrefSec: 90,
+  gymMode: false,
 };
 
 /* ── REDUCER ───────────────────────────────────────── */
@@ -1107,6 +1214,8 @@ function reducer(state, action) {
     case 'SET_TAB': return { ...state, tab: action.tab };
     case 'SET_PENDING_SESSION': return { ...state, pendingSession: action.session };
     case 'CLEAR_PENDING_SESSION': return { ...state, pendingSession: null };
+    case 'SET_REST_PREF': return { ...state, restPrefSec: action.seconds };
+    case 'TOGGLE_GYM_MODE': return { ...state, gymMode: !state.gymMode };
     case 'SAVE_CUSTOM_FOOD': return { ...state, customFoods: [...(state.customFoods||[]), action.food] };
     case 'DELETE_CUSTOM_FOOD': return { ...state, customFoods: (state.customFoods||[]).filter((_,i)=>i!==action.idx) };
 
@@ -1237,6 +1346,102 @@ const getIntensityLevel = (exCount) => {
   return INTENSITY_LEVELS[exCount];
 };
 
+/* ── EXERCISE DEMO LINKS (YouTube shorts / wikipedia) ─── */
+const ytSearch = (q) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q + ' proper form')}`;
+const EXERCISE_DEMOS = {
+  'Bench Press': 'https://www.youtube.com/watch?v=rT7DgCr-3pg',
+  'Incline Bench Press': 'https://www.youtube.com/watch?v=DbFgADa2PL8',
+  'Overhead Press': 'https://www.youtube.com/watch?v=2yjwXTZQDDI',
+  'Deadlift': 'https://www.youtube.com/watch?v=op9kVnSso6Q',
+  'Back Squat': 'https://www.youtube.com/watch?v=ultWZbUMPL8',
+  'Front Squat': 'https://www.youtube.com/watch?v=tlfahNdNPPI',
+  'Romanian Deadlift': 'https://www.youtube.com/watch?v=hCDzSR6bW10',
+  'Pull-Ups': 'https://www.youtube.com/watch?v=eGo4IYlbE5g',
+  'Barbell Row': 'https://www.youtube.com/watch?v=vT2GjY_Umpw',
+  'Lat Pulldown': 'https://www.youtube.com/watch?v=CAwf7n6Luuc',
+  'Seated Cable Row': 'https://www.youtube.com/watch?v=GZbfZ033f74',
+  'Dumbbell Curl': 'https://www.youtube.com/watch?v=ykJmrZ5v0Oo',
+  'Hammer Curl': 'https://www.youtube.com/watch?v=zC3nLlEvin4',
+  'Tricep Pushdown': 'https://www.youtube.com/watch?v=2-LAMcpzODU',
+  'Skull Crusher': 'https://www.youtube.com/watch?v=d_KZxkY_0cM',
+  'Lateral Raises': 'https://www.youtube.com/watch?v=3VcKaXpzqRo',
+  'Face Pull': 'https://www.youtube.com/watch?v=rep-qVOkqgk',
+  'Hip Thrust': 'https://www.youtube.com/watch?v=xDmFkJxPzeM',
+  'Hip Thrusts': 'https://www.youtube.com/watch?v=xDmFkJxPzeM',
+  'Bulgarian Split Squat': 'https://www.youtube.com/watch?v=2C-uNgKwPLE',
+  'Walking Lunges': 'https://www.youtube.com/watch?v=L8fvypPrzzs',
+  'Leg Press': 'https://www.youtube.com/watch?v=IZxyjW7MPJQ',
+  'Leg Curl': 'https://www.youtube.com/watch?v=ELOCsoDSmrg',
+  'Leg Extension': 'https://www.youtube.com/watch?v=YyvSfVjQeL0',
+  'Cable Kickback': 'https://www.youtube.com/watch?v=SqO-VUEAg_s',
+  'Plank': 'https://www.youtube.com/watch?v=ASdvN_XEl_c',
+  'Hanging Leg Raises': 'https://www.youtube.com/watch?v=Pr1ieGZ5atk',
+  'Russian Twist': 'https://www.youtube.com/watch?v=wkD8rjkodUI',
+  'Cable Crunch': 'https://www.youtube.com/watch?v=2fbujeH3F58',
+  'Standing Calf Raises': 'https://www.youtube.com/watch?v=YMmgqO8Jo-k',
+  'Box Jumps': 'https://www.youtube.com/watch?v=NBY9-kTuHEk',
+  'Sled Push': 'https://www.youtube.com/watch?v=Bj_Q9wW5kE0',
+};
+const getDemoLink = (name) => EXERCISE_DEMOS[name] || ytSearch(name);
+
+/* ── STRENGTH HELPERS ───────────────────────────────── */
+const getLastBestSet = (strengthLog, exerciseName) => {
+  const log = (strengthLog || {})[exerciseName] || [];
+  if (!log.length) return null;
+  // Group by date, find latest date, return heaviest set from that date
+  const byDate = log.reduce((m, s) => { (m[s.date] = m[s.date] || []).push(s); return m; }, {});
+  const dates = Object.keys(byDate).sort();
+  const latest = dates[dates.length-1];
+  const sets = byDate[latest];
+  return sets.reduce((best, s) => (!best || s.weight > best.weight) ? s : best, null);
+};
+const getAllTimePR = (strengthLog, exerciseName) => {
+  const log = (strengthLog || {})[exerciseName] || [];
+  if (!log.length) return null;
+  return log.reduce((best, s) => (!best || s.weight > best.weight) ? s : best, null);
+};
+const suggestNextWeight = (last) => {
+  if (!last || !last.weight) return null;
+  const reps = parseInt(last.reps) || 0;
+  // If they hit 8+ reps last time, suggest +5lb. Otherwise stay.
+  if (reps >= 8) return Math.round((last.weight + 5) * 2) / 2;
+  return last.weight;
+};
+
+/* ── ACHIEVEMENTS ──────────────────────────────────── */
+const computeAchievements = (state) => {
+  const sessions = state.sessions || [];
+  const log = state.strengthLog || {};
+  const badges = [];
+  // Session-based
+  if (sessions.length >= 1)   badges.push({ id:'first-session', label:'First Session', emoji:'🎯', color:'#4E8B47' });
+  if (sessions.length >= 10)  badges.push({ id:'10-sessions',   label:'10 Sessions',   emoji:'🔥', color:'#E07520' });
+  if (sessions.length >= 25)  badges.push({ id:'25-sessions',   label:'25 Sessions',   emoji:'💪', color:'#2A6FBA' });
+  if (sessions.length >= 50)  badges.push({ id:'50-sessions',   label:'50 Sessions',   emoji:'🏆', color:'#C8891A' });
+  if (sessions.length >= 100) badges.push({ id:'100-sessions',  label:'Century Club',  emoji:'👑', color:'#9B30FF' });
+  // Volume-based
+  const totalSets = sessions.reduce((a,s)=>a + s.exercises.reduce((b,e)=>b+e.sets.length,0), 0);
+  if (totalSets >= 100)  badges.push({ id:'100-sets',  label:'100 Sets Logged',  emoji:'📊', color:'#4E8B47' });
+  if (totalSets >= 500)  badges.push({ id:'500-sets',  label:'500 Sets Logged',  emoji:'📈', color:'#2A6FBA' });
+  if (totalSets >= 1000) badges.push({ id:'1000-sets', label:'1,000 Sets',       emoji:'🚀', color:'#E07520' });
+  // Strength PRs
+  const benchPR = (getAllTimePR(log, 'Bench Press')||{}).weight || 0;
+  if (benchPR >= 135) badges.push({ id:'bench-135', label:'135 lb Bench', emoji:'🏋️', color:'#4E8B47' });
+  if (benchPR >= 185) badges.push({ id:'bench-185', label:'185 lb Bench', emoji:'🏋️', color:'#C8891A' });
+  if (benchPR >= 225) badges.push({ id:'bench-225', label:'2 Plate Bench', emoji:'🏆', color:'#E74C3C' });
+  const squatPR = (getAllTimePR(log, 'Back Squat')||{}).weight || 0;
+  if (squatPR >= 225) badges.push({ id:'squat-225', label:'225 lb Squat', emoji:'🦵', color:'#4E8B47' });
+  if (squatPR >= 315) badges.push({ id:'squat-315', label:'3 Plate Squat', emoji:'🦵', color:'#C8891A' });
+  const dlPR = (getAllTimePR(log, 'Deadlift')||{}).weight || 0;
+  if (dlPR >= 315) badges.push({ id:'dl-315', label:'3 Plate Deadlift', emoji:'🪨', color:'#4E8B47' });
+  if (dlPR >= 405) badges.push({ id:'dl-405', label:'4 Plate Deadlift', emoji:'🪨', color:'#C8891A' });
+  // Streak
+  const dates = [...new Set(sessions.map(s=>s.date))].sort();
+  if (dates.length >= 7)  badges.push({ id:'streak-7',  label:'7-Day Active',  emoji:'⚡', color:'#4E8B47' });
+  if (dates.length >= 30) badges.push({ id:'streak-30', label:'30-Day Active', emoji:'🌟', color:'#C8891A' });
+  return badges;
+};
+
 const sumMacros = (meals) => {
   const all = Object.values(meals || {}).flat();
   return all.reduce((acc, item) => ({
@@ -1312,6 +1517,178 @@ function Modal({ title, onClose, children, footer }) {
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
     </div>
+  );
+}
+
+/* ── REST TIMER — floating pill ─────────────────────── */
+function RestTimer({ seconds, onClose, onChangePref }) {
+  const [remaining, setRemaining] = useState(seconds);
+  const audioRef = useRef(null);
+  useEffect(() => { setRemaining(seconds); }, [seconds]);
+  useEffect(() => {
+    if (remaining <= 0) {
+      // Beep + vibrate when zero hit
+      try { if (navigator.vibrate) navigator.vibrate([180, 80, 180]); } catch {}
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.frequency.value = 880; osc.connect(gain); gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.start(); osc.stop(ctx.currentTime + 0.5);
+      } catch {}
+      return;
+    }
+    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
+    return () => clearTimeout(t);
+  }, [remaining]);
+  const pct = Math.max(0, Math.min(100, (remaining / seconds) * 100));
+  const done = remaining <= 0;
+  const mm = String(Math.floor(Math.max(0,remaining)/60)).padStart(1,'0');
+  const ss = String(Math.max(0,remaining)%60).padStart(2,'0');
+  return (
+    <div className={`rest-timer ${done?'done':''}`} role="status" aria-live="polite">
+      <div className="rest-timer-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4"/>
+          <circle cx="28" cy="28" r="24" fill="none" stroke={done?'#E07520':'#4E8B47'} strokeWidth="4" strokeLinecap="round"
+                  strokeDasharray={2*Math.PI*24} strokeDashoffset={2*Math.PI*24*(1-pct/100)}
+                  transform="rotate(-90 28 28)" style={{transition:'stroke-dashoffset 0.9s linear'}}/>
+        </svg>
+        <div className="rest-timer-time">{done ? 'GO' : `${mm}:${ss}`}</div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:4,flex:1,minWidth:0}}>
+        <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:1,color:done?'#E07520':'var(--green2)'}}>{done?'Rest done':'Resting'}</div>
+        <div style={{display:'flex',gap:6}}>
+          {[60,90,120,180].map(s => (
+            <button key={s} className={`rest-chip ${seconds===s?'active':''}`} onClick={()=>onChangePref(s)}>{s/60}:{s%60===0?'00':s%60}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:6}}>
+        <button className="btn btn-ghost btn-sm" onClick={()=>setRemaining(seconds)} style={{padding:'4px 10px',fontSize:11}}>↻</button>
+        <button className="btn btn-ghost btn-sm" onClick={onClose} style={{padding:'4px 10px',fontSize:11,color:'var(--muted)'}}>×</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── VOICE INPUT — Web Speech API ──────────────────── */
+function VoiceButton({ onResult, disabled }) {
+  const [listening, setListening] = useState(false);
+  const recRef = useRef(null);
+  const supported = typeof window !== 'undefined' &&
+    (window.SpeechRecognition || window.webkitSpeechRecognition);
+  if (!supported) return null;
+  const start = () => {
+    if (listening) { try { recRef.current?.stop(); } catch {}; return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r = new SR();
+    r.lang = 'en-US';
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.onresult = (e) => {
+      const t = (e.results[0][0].transcript || '').toLowerCase().trim();
+      // Parse: "log 95 by 8" / "log ninety-five by eight" / "95 for 8" / "95 by 8"
+      const num = (w) => { const map={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,fifteen:15,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90,hundred:100}; const n=parseFloat(w); return isNaN(n)?(map[w]||null):n; };
+      const cleaned = t.replace(/-/g,' ').replace(/\b(at|of|pounds?|lbs?|reps?|times)\b/g,' ').replace(/\s+/g,' ').trim();
+      const tokens = cleaned.split(' ');
+      const nums = tokens.map(num).filter(n => n !== null);
+      if (nums.length >= 2) onResult({ weight: nums[0], reps: nums[1], transcript: t });
+      else if (nums.length === 1) onResult({ weight: nums[0], reps: null, transcript: t });
+      else onResult({ transcript: t, error: 'Could not parse — try "95 by 8"' });
+    };
+    r.onerror = () => setListening(false);
+    r.onend = () => setListening(false);
+    recRef.current = r;
+    r.start();
+    setListening(true);
+  };
+  return (
+    <button className={`voice-btn ${listening?'listening':''}`} onClick={start} disabled={disabled} aria-label="Voice log a set" title='Voice: say "95 by 8"'>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+        <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+    </button>
+  );
+}
+
+/* ── EXERCISE HISTORY MODAL — chart of weight × date ── */
+function ExerciseHistoryModal({ exerciseName, strengthLog, onClose }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+  const data = (strengthLog || {})[exerciseName] || [];
+  // Group by date — take heaviest set per day
+  const byDate = data.reduce((m, s) => {
+    if (!m[s.date] || s.weight > m[s.date].weight) m[s.date] = s;
+    return m;
+  }, {});
+  const sorted = Object.values(byDate).sort((a,b) => a.date.localeCompare(b.date));
+  const pr = data.reduce((best, s) => (!best || s.weight > best.weight) ? s : best, null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !sorted.length) return;
+    if (chartRef.current) chartRef.current.destroy();
+    chartRef.current = new Chart(canvasRef.current, {
+      type: 'line',
+      data: {
+        labels: sorted.map(s => s.date.slice(5)),
+        datasets: [{
+          label: 'Top set weight (lbs)',
+          data: sorted.map(s => s.weight),
+          borderColor: '#4E8B47',
+          backgroundColor: 'rgba(78,139,71,0.15)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#72A84E',
+          pointRadius: 4,
+          tension: 0.25,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8a8a8a', font:{size:10} }, grid: { color:'rgba(0,0,0,0.04)' } },
+          y: { ticks: { color: '#8a8a8a', font:{size:10} }, grid: { color:'rgba(0,0,0,0.04)' } },
+        }
+      }
+    });
+    return () => chartRef.current?.destroy();
+  }, [exerciseName]);
+
+  return (
+    <Modal title={`History — ${exerciseName}`} onClose={onClose}>
+      {sorted.length === 0 ? (
+        <div style={{padding:'30px 0',textAlign:'center',color:'var(--muted)'}}>No logged sets yet for this exercise.</div>
+      ) : (
+        <>
+          <div className="grid-3" style={{marginBottom:16}}>
+            <div className="card" style={{padding:12}}>
+              <div className="card-title" style={{fontSize:10}}>All-Time PR</div>
+              <div style={{fontSize:20,fontWeight:800,color:'var(--green2)',fontFamily:'var(--mono)'}}>{pr?.weight || 0} lb</div>
+              <div style={{fontSize:11,color:'var(--muted)'}}>× {pr?.reps || 0} reps</div>
+            </div>
+            <div className="card" style={{padding:12}}>
+              <div className="card-title" style={{fontSize:10}}>Sessions</div>
+              <div style={{fontSize:20,fontWeight:800,fontFamily:'var(--mono)'}}>{sorted.length}</div>
+            </div>
+            <div className="card" style={{padding:12}}>
+              <div className="card-title" style={{fontSize:10}}>Total Sets</div>
+              <div style={{fontSize:20,fontWeight:800,fontFamily:'var(--mono)'}}>{data.length}</div>
+            </div>
+          </div>
+          <div style={{height:240,position:'relative'}}>
+            <canvas ref={canvasRef}/>
+          </div>
+        </>
+      )}
+    </Modal>
   );
 }
 
@@ -1488,6 +1865,172 @@ function Home({ state, dispatch }) {
 }
 
 /* ── COMPONENT: WORKOUT TRACKER ─────────────────────── */
+/* ── ACTIVE SESSION VIEW (with rest timer, suggested weight, demos, history, gym mode) ── */
+function ActiveSessionView({ state, dispatch, updateSet }) {
+  const s = state.activeSession;
+  const [timerOpen, setTimerOpen] = useState(false);
+  const [timerKey, setTimerKey] = useState(0);
+  const [historyEx, setHistoryEx] = useState(null);
+  const [voiceMsg, setVoiceMsg] = useState('');
+  const restPref = state.restPrefSec || 90;
+
+  const startRest = () => { setTimerKey(k => k+1); setTimerOpen(true); };
+  const handleVoice = (parsed) => {
+    if (parsed.error) { setVoiceMsg(parsed.error); setTimeout(()=>setVoiceMsg(''), 2500); return; }
+    // Inject into first incomplete set across all exercises
+    for (let i = 0; i < s.exercises.length; i++) {
+      const ex = s.exercises[i];
+      for (let j = 0; j < ex.sets.length; j++) {
+        if (!ex.sets[j].weight && !ex.sets[j].reps) {
+          if (parsed.weight != null) updateSet(i, j, 'weight', String(parsed.weight));
+          if (parsed.reps != null) updateSet(i, j, 'reps', String(parsed.reps));
+          setVoiceMsg(`✓ Logged ${parsed.weight ?? '?'} × ${parsed.reps ?? '?'} on ${ex.name}`);
+          setTimeout(()=>setVoiceMsg(''), 2500);
+          startRest();
+          return;
+        }
+      }
+    }
+    setVoiceMsg('All sets filled — add a new set first');
+    setTimeout(()=>setVoiceMsg(''), 2500);
+  };
+
+  const markSetDone = (exIdx, setIdx) => {
+    const set = s.exercises[exIdx].sets[setIdx];
+    if (!set.weight || !set.reps) return;
+    updateSet(exIdx, setIdx, 'done', !set.done);
+    if (!set.done) startRest(); // only start timer when transitioning to done
+  };
+
+  return (
+    <div style={{paddingBottom: timerOpen ? 100 : 0}}>
+      <div className="page-header">
+        <div>
+          <div className="page-title">{s.name}</div>
+          <div className="page-sub">{s.exercises.length} exercises · Session in progress</div>
+        </div>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          <button className={`btn btn-sm ${state.gymMode?'btn-primary':'btn-secondary'}`} onClick={()=>dispatch({type:'TOGGLE_GYM_MODE'})} title="Toggle big-button gym mode">
+            {state.gymMode ? '🏋️ Gym Mode' : 'Gym Mode'}
+          </button>
+          <VoiceButton onResult={handleVoice}/>
+          <button className="btn btn-danger btn-sm" onClick={() => dispatch({type:'DISCARD_SESSION'})}>Discard</button>
+          <button className="btn btn-primary" onClick={() => dispatch({type:'COMPLETE_SESSION'})}>Finish</button>
+        </div>
+      </div>
+
+      {voiceMsg && (
+        <div style={{padding:'10px 16px',background:'var(--green-dim)',border:'1px solid var(--green3)',borderRadius:'var(--radius-sm)',marginBottom:16,fontSize:13,color:'var(--green2)',fontWeight:600}}>
+          {voiceMsg}
+        </div>
+      )}
+
+      {s.exercises.map((ex, exIdx) => {
+        const last = getLastBestSet(state.strengthLog, ex.name);
+        const suggested = suggestNextWeight(last);
+        const demoUrl = getDemoLink(ex.name);
+        return (
+          <div key={exIdx} className="session-builder" style={{marginBottom:16}}>
+            <div className="session-header">
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                  <span style={{fontWeight:700,fontSize:15,color:'var(--text)'}}>{ex.name}</span>
+                  <a href={demoUrl} target="_blank" rel="noopener" className="ex-icon-btn" title="Watch form demo" aria-label="Form demo">▶</a>
+                  <button className="ex-icon-btn" onClick={()=>setHistoryEx(ex.name)} title="Exercise history" aria-label="Exercise history">📈</button>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4,flexWrap:'wrap'}}>
+                  <span className="muscle-tag">{ex.muscle}</span>
+                  {last && (
+                    <span style={{fontSize:11,color:'var(--muted)'}}>
+                      Last: <strong style={{color:'var(--text2)'}}>{last.weight}×{last.reps}</strong>
+                      {suggested && suggested !== last.weight && (
+                        <span style={{color:'var(--green2)',marginLeft:6,fontWeight:600}}>→ Try {suggested} today</span>
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button className="btn btn-secondary btn-sm" onClick={() => dispatch({type:'ADD_SET',exIdx})}>+ Set</button>
+            </div>
+            <div style={{padding:'0 20px'}}>
+              {state.gymMode ? (
+                ex.sets.map((set, setIdx) => (
+                  <BigSetRow key={setIdx} set={set} setIdx={setIdx} suggested={suggested} onChange={(field,val)=>updateSet(exIdx,setIdx,field,val)} onDone={()=>markSetDone(exIdx, setIdx)}/>
+                ))
+              ) : (
+                <>
+                  <div className="set-row" style={{color:'var(--muted)',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                    <div style={{textAlign:'center'}}>Set</div>
+                    <div>Weight (lbs)</div>
+                    <div>Reps</div>
+                    <div>RPE</div>
+                    <div/>
+                  </div>
+                  {ex.sets.map((set, setIdx) => (
+                    <div key={setIdx} className={`set-row ${set.done?'done':''}`}>
+                      <div className="set-num">{setIdx+1}</div>
+                      <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder={suggested ? String(suggested) : '0'} value={set.weight} onChange={e=>updateSet(exIdx,setIdx,'weight',e.target.value)} aria-label={`Exercise ${exIdx+1} set ${setIdx+1} weight`}/>
+                      <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder={last ? String(last.reps) : '0'} value={set.reps}   onChange={e=>updateSet(exIdx,setIdx,'reps',e.target.value)}   aria-label={`Exercise ${exIdx+1} set ${setIdx+1} reps`}/>
+                      <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="—" min="1" max="10" value={set.rpe||''} onChange={e=>updateSet(exIdx,setIdx,'rpe',e.target.value)} aria-label="RPE 1-10"/>
+                      <button className={`btn btn-sm ${set.done?'btn-primary':'btn-secondary'}`} style={{padding:'4px 8px',minWidth:30}} onClick={() => markSetDone(exIdx, setIdx)} aria-label="Mark set done" title="Mark done & start rest">{set.done ? '✓' : '○'}</button>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })}
+
+      {timerOpen && (
+        <RestTimer
+          key={timerKey}
+          seconds={restPref}
+          onClose={()=>setTimerOpen(false)}
+          onChangePref={(s)=>{ dispatch({type:'SET_REST_PREF',seconds:s}); setTimerKey(k=>k+1); }}
+        />
+      )}
+
+      {historyEx && (
+        <ExerciseHistoryModal exerciseName={historyEx} strengthLog={state.strengthLog} onClose={()=>setHistoryEx(null)}/>
+      )}
+    </div>
+  );
+}
+
+/* ── BIG SET ROW (gym mode) ── */
+function BigSetRow({ set, setIdx, suggested, onChange, onDone }) {
+  const w = parseFloat(set.weight) || (suggested || 0);
+  const r = parseInt(set.reps) || 0;
+  const inc = (field, by) => onChange(field, String(Math.max(0, (parseFloat(set[field])||0) + by)));
+  return (
+    <div className={`big-set-row ${set.done?'done':''}`}>
+      <div className="big-set-num">SET {setIdx+1}</div>
+      <div className="big-set-grid">
+        <div className="big-set-col">
+          <div className="big-set-label">WEIGHT</div>
+          <div className="big-set-ctl">
+            <button className="big-set-btn" onClick={()=>inc('weight', -5)}>−</button>
+            <input className="big-set-input" type="number" value={set.weight} placeholder={String(suggested||0)} onChange={e=>onChange('weight', e.target.value)}/>
+            <button className="big-set-btn" onClick={()=>inc('weight', 5)}>+</button>
+          </div>
+        </div>
+        <div className="big-set-col">
+          <div className="big-set-label">REPS</div>
+          <div className="big-set-ctl">
+            <button className="big-set-btn" onClick={()=>inc('reps', -1)}>−</button>
+            <input className="big-set-input" type="number" value={set.reps} placeholder="0" onChange={e=>onChange('reps', e.target.value)}/>
+            <button className="big-set-btn" onClick={()=>inc('reps', 1)}>+</button>
+          </div>
+        </div>
+      </div>
+      <button className={`big-set-done ${set.done?'done':''}`} onClick={onDone} disabled={!set.weight || !set.reps}>
+        {set.done ? '✓ DONE' : 'TAP TO LOG'}
+      </button>
+    </div>
+  );
+}
+
 function WorkoutTracker({ state, dispatch }) {
   const [selectedMuscle, setSelectedMuscle] = useState('chest');
   const [selectedExercises, setSelectedExercises] = useState([]);
@@ -1523,51 +2066,7 @@ function WorkoutTracker({ state, dispatch }) {
     dispatch({ type:'UPDATE_SET', exIdx, setIdx, field, value });
 
   if (state.activeSession) {
-    const s = state.activeSession;
-    return (
-      <div>
-        <div className="page-header">
-          <div>
-            <div className="page-title">{s.name}</div>
-            <div className="page-sub">{s.exercises.length} exercises · Session in progress</div>
-          </div>
-          <div style={{display:'flex',gap:10}}>
-            <button className="btn btn-danger" onClick={() => dispatch({type:'DISCARD_SESSION'})}>Discard</button>
-            <button className="btn btn-primary btn-lg" onClick={() => dispatch({type:'COMPLETE_SESSION'})}>Finish Session</button>
-          </div>
-        </div>
-
-        {s.exercises.map((ex, exIdx) => (
-          <div key={exIdx} className="session-builder" style={{marginBottom:16}}>
-            <div className="session-header">
-              <div>
-                <div style={{fontWeight:700,fontSize:15,color:'var(--text)'}}>{ex.name}</div>
-                <span className="muscle-tag">{ex.muscle}</span>
-              </div>
-              <button className="btn btn-secondary btn-sm" onClick={() => dispatch({type:'ADD_SET',exIdx})}>+ Set</button>
-            </div>
-            <div style={{padding:'0 20px'}}>
-              <div className="set-row" style={{color:'var(--muted)',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px'}}>
-                <div style={{textAlign:'center'}}>Set</div>
-                <div>Weight (lbs)</div>
-                <div>Reps</div>
-                <div>RPE</div>
-                <div/>
-              </div>
-              {ex.sets.map((set, setIdx) => (
-                <div key={setIdx} className="set-row">
-                  <div className="set-num">{setIdx+1}</div>
-                  <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="0" value={set.weight} onChange={e=>updateSet(exIdx,setIdx,'weight',e.target.value)} aria-label={`Exercise ${exIdx+1} set ${setIdx+1} weight`}/>
-                  <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="0" value={set.reps}   onChange={e=>updateSet(exIdx,setIdx,'reps',e.target.value)}   aria-label={`Exercise ${exIdx+1} set ${setIdx+1} reps`}/>
-                  <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="—" min="1" max="10" value={set.rpe||''} onChange={e=>updateSet(exIdx,setIdx,'rpe',e.target.value)} aria-label="RPE 1-10"/>
-                  <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)',padding:'4px 8px'}} onClick={() => {}} aria-label="Mark done">v</button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <ActiveSessionView state={state} dispatch={dispatch} updateSet={updateSet}/>;
   }
 
   return (
