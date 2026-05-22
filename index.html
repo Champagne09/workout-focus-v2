@@ -946,6 +946,65 @@ select.form-input option { background: var(--surface2); }
 .big-set-done.done { background: var(--green3); }
 .big-set-done:active:not(:disabled) { transform: scale(0.98); }
 
+/* ── ACHIEVEMENTS ───────────────────────────────── */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.achievement-badge {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 14px 8px;
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(78,139,71,0.05) 100%);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.achievement-badge:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,139,71,0.15); }
+.achievement-emoji { font-size: 32px; line-height: 1; }
+.achievement-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* ── PHOTO JOURNAL ──────────────────────────────── */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.photo-tile {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--border);
+}
+.photo-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-meta {
+  position: absolute; left: 8px; bottom: 8px;
+  padding: 4px 8px; background: rgba(0,0,0,0.65); border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+.photo-actions {
+  position: absolute; top: 6px; right: 6px;
+  display: flex; gap: 4px;
+  background: rgba(0,0,0,0.55); border-radius: 99px;
+  padding: 2px;
+  backdrop-filter: blur(4px);
+}
+.photo-actions .btn-sm { padding: 4px 8px; min-height: 0; min-width: 24px; }
+.photo-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.photo-compare-pane { position: relative; aspect-ratio: 3/4; border-radius: var(--radius-sm); overflow: hidden; background: #000; }
+.photo-compare-pane img { width: 100%; height: 100%; object-fit: cover; }
+.photo-compare-cap {
+  position: absolute; left: 8px; bottom: 8px;
+  padding: 4px 8px; background: rgba(0,0,0,0.65); border-radius: 4px;
+  font-size: 11px; font-weight: 700; color: #fff;
+  backdrop-filter: blur(4px);
+}
+
 /* ── RESPONSIVE (PHONE) ─────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { display: none; }
@@ -3631,6 +3690,305 @@ function WorkoutCalendar({ state }) {
   );
 }
 
+/* ── INDEXED DB — progress photo storage ────────────── */
+const PHOTO_DB = 'wf-photos';
+const PHOTO_STORE = 'photos';
+function openPhotoDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(PHOTO_DB, 1);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => resolve(req.result);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(PHOTO_STORE)) {
+        const store = db.createObjectStore(PHOTO_STORE, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('date', 'date', { unique: false });
+      }
+    };
+  });
+}
+async function savePhotoBlob(blob, dateStr, label) {
+  const db = await openPhotoDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PHOTO_STORE, 'readwrite');
+    tx.objectStore(PHOTO_STORE).add({ blob, date: dateStr, label, created: Date.now() });
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function listPhotos() {
+  const db = await openPhotoDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PHOTO_STORE, 'readonly');
+    const req = tx.objectStore(PHOTO_STORE).getAll();
+    req.onsuccess = () => resolve((req.result || []).sort((a,b)=> a.date.localeCompare(b.date)));
+    req.onerror = () => reject(req.error);
+  });
+}
+async function deletePhoto(id) {
+  const db = await openPhotoDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PHOTO_STORE, 'readwrite');
+    tx.objectStore(PHOTO_STORE).delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ── ACHIEVEMENTS SECTION ─────────────────────────── */
+function AchievementsSection({ state }) {
+  const badges = computeAchievements(state);
+  if (!badges.length) {
+    return (
+      <div className="card" style={{marginBottom:24,textAlign:'center',padding:'32px 20px'}}>
+        <div style={{fontSize:36,marginBottom:8,opacity:0.5}}>🏆</div>
+        <div style={{fontSize:14,color:'var(--muted)'}}>Log your first session to start earning achievements</div>
+      </div>
+    );
+  }
+  return (
+    <div className="card" style={{marginBottom:24}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+        <div className="card-title" style={{margin:0}}>Achievements — {badges.length} earned</div>
+      </div>
+      <div className="achievement-grid">
+        {badges.map(b => (
+          <div key={b.id} className="achievement-badge" style={{borderColor: b.color}}>
+            <div className="achievement-emoji">{b.emoji}</div>
+            <div className="achievement-label">{b.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── WEEKLY RECAP — generates a shareable PNG ───────── */
+function WeeklyRecap({ state }) {
+  const canvasRef = useRef(null);
+  const [generated, setGenerated] = useState(false);
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - 6);
+  const weekStart = startOfWeek.toISOString().slice(0,10);
+  const weekSessions = state.sessions.filter(s => s.date >= weekStart);
+  const totalSets = weekSessions.reduce((a,s)=>a + s.exercises.reduce((b,e)=>b+e.sets.length,0), 0);
+  const totalVolume = weekSessions.reduce((acc,s) =>
+    acc + s.exercises.reduce((eAcc,e) =>
+      eAcc + e.sets.reduce((sAcc,set) => sAcc + ((parseFloat(set.weight)||0) * (parseInt(set.reps)||0)), 0)
+    , 0)
+  , 0);
+  const dates = [...new Set(weekSessions.map(s => s.date))];
+  const heaviestSet = weekSessions.flatMap(s => s.exercises.flatMap(e =>
+    e.sets.filter(set => set.weight && set.reps).map(set => ({ exercise:e.name, weight:parseFloat(set.weight), reps:parseInt(set.reps) }))
+  )).reduce((best, s) => (!best || s.weight > best.weight) ? s : best, null);
+
+  const generate = () => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const W = 1080, H = 1080;
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    // Background gradient
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#0e0e0e');
+    bg.addColorStop(0.5, '#1a3a18');
+    bg.addColorStop(1, '#0e0e0e');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    // Soft green glow
+    const glow = ctx.createRadialGradient(W*0.7, H*0.3, 50, W*0.7, H*0.3, 600);
+    glow.addColorStop(0, 'rgba(78,139,71,0.35)');
+    glow.addColorStop(1, 'rgba(78,139,71,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+    // Header
+    ctx.fillStyle = '#4E8B47';
+    ctx.font = 'bold 28px Inter, system-ui';
+    ctx.fillText('WEEKLY RECAP', 80, 130);
+    ctx.fillStyle = '#888';
+    ctx.font = '24px Inter, system-ui';
+    ctx.fillText(`${weekStart} → ${today.toISOString().slice(0,10)}`, 80, 170);
+    // Big number — sessions
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 280px Inter, system-ui';
+    ctx.fillText(String(weekSessions.length), 80, 480);
+    ctx.fillStyle = '#aaa';
+    ctx.font = '36px Inter, system-ui';
+    ctx.fillText('sessions this week', 80, 540);
+    // Stat grid
+    const stats = [
+      ['SETS', String(totalSets)],
+      ['VOLUME', `${Math.round(totalVolume).toLocaleString()} lb`],
+      ['DAYS ACTIVE', String(dates.length)],
+      ['STREAK', `${dates.length}/7`],
+    ];
+    stats.forEach((s, i) => {
+      const x = 80 + (i % 2) * 470;
+      const y = 660 + Math.floor(i / 2) * 130;
+      ctx.fillStyle = '#1a2a18';
+      ctx.fillRect(x, y, 430, 110);
+      ctx.strokeStyle = 'rgba(78,139,71,0.4)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, 430, 110);
+      ctx.fillStyle = '#4E8B47';
+      ctx.font = 'bold 18px Inter, system-ui';
+      ctx.fillText(s[0], x + 24, y + 38);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 44px Inter, system-ui';
+      ctx.fillText(s[1], x + 24, y + 88);
+    });
+    // Heaviest set
+    if (heaviestSet) {
+      ctx.fillStyle = '#4E8B47';
+      ctx.font = 'bold 20px Inter, system-ui';
+      ctx.fillText('HARDEST SET', 80, 970);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 36px Inter, system-ui';
+      ctx.fillText(`${heaviestSet.exercise} — ${heaviestSet.weight} × ${heaviestSet.reps}`, 80, 1010);
+    }
+    // Footer
+    ctx.fillStyle = '#444';
+    ctx.font = '20px Inter, system-ui';
+    ctx.fillText('Workout Focus', 80, H - 50);
+    setGenerated(true);
+  };
+
+  const download = () => {
+    const c = canvasRef.current;
+    if (!c) return;
+    c.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weekly-recap-${weekStart}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  };
+
+  return (
+    <div className="card" style={{marginBottom:24}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:8}}>
+        <div>
+          <div className="card-title" style={{margin:0}}>Weekly Recap</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>{weekSessions.length} sessions · {totalSets} sets · {Math.round(totalVolume).toLocaleString()} lb total volume</div>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <button className="btn btn-secondary btn-sm" onClick={generate}>Generate Image</button>
+          {generated && <button className="btn btn-primary btn-sm" onClick={download}>Download PNG</button>}
+        </div>
+      </div>
+      <canvas ref={canvasRef} style={{width:'100%',maxWidth:400,display:generated?'block':'none',borderRadius:'var(--radius-sm)',border:'1px solid var(--border)'}}/>
+    </div>
+  );
+}
+
+/* ── PHOTO PROGRESS JOURNAL ─────────────────────────── */
+function PhotoJournal() {
+  const [photos, setPhotos] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [compareA, setCompareA] = useState(null);
+  const [compareB, setCompareB] = useState(null);
+  const [label, setLabel] = useState('front');
+  const fileRef = useRef(null);
+
+  const refresh = async () => {
+    try {
+      const list = await listPhotos();
+      // Build object URLs
+      const withUrls = list.map(p => ({ ...p, url: URL.createObjectURL(p.blob) }));
+      setPhotos(prev => {
+        prev.forEach(p => p.url && URL.revokeObjectURL(p.url));
+        return withUrls;
+      });
+    } catch (e) { console.error(e); }
+  };
+  useEffect(() => { refresh(); return () => photos.forEach(p => p.url && URL.revokeObjectURL(p.url)); }, []);
+
+  const onFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const dateStr = new Date().toISOString().slice(0,10);
+      await savePhotoBlob(file, dateStr, label);
+      await refresh();
+    } catch (err) { console.error(err); alert('Could not save photo.'); }
+    setBusy(false);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const remove = async (id) => {
+    if (!confirm('Delete this photo?')) return;
+    await deletePhoto(id);
+    await refresh();
+  };
+
+  return (
+    <div className="card" style={{marginBottom:24}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:8}}>
+        <div>
+          <div className="card-title" style={{margin:0}}>Progress Photos</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>Stored on this device only · {photos.length} {photos.length===1?'photo':'photos'}</div>
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <select className="form-input" style={{width:'auto',padding:'8px 10px',fontSize:13}} value={label} onChange={e=>setLabel(e.target.value)}>
+            <option value="front">Front</option>
+            <option value="side">Side</option>
+            <option value="back">Back</option>
+            <option value="flex">Flex</option>
+          </select>
+          <button className="btn btn-primary btn-sm" onClick={()=>fileRef.current?.click()} disabled={busy}>+ Add Photo</button>
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:'none'}} onChange={onFile}/>
+        </div>
+      </div>
+
+      {photos.length === 0 ? (
+        <div style={{padding:'32px 20px',textAlign:'center',color:'var(--muted)',fontSize:13}}>
+          Snap a weekly progress pic to build a visual timeline. Photos stay on this device — never uploaded.
+        </div>
+      ) : (
+        <>
+          <div className="photo-grid">
+            {photos.map(p => (
+              <div key={p.id} className="photo-tile">
+                <img src={p.url} alt={`${p.label} ${p.date}`}/>
+                <div className="photo-meta">
+                  <div style={{fontSize:11,fontWeight:700,color:'#fff'}}>{p.date}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,0.7)',textTransform:'uppercase'}}>{p.label}</div>
+                </div>
+                <div className="photo-actions">
+                  <button className="btn btn-ghost btn-sm" onClick={()=>setCompareA(p)} style={{color:'#fff',fontSize:11}}>A</button>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>setCompareB(p)} style={{color:'#fff',fontSize:11}}>B</button>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>remove(p.id)} style={{color:'#E74C3C',fontSize:11}}>×</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {compareA && compareB && (
+            <div className="photo-compare" style={{marginTop:16}}>
+              <div className="photo-compare-pane">
+                <img src={compareA.url} alt="A"/>
+                <div className="photo-compare-cap">{compareA.date} · {compareA.label}</div>
+              </div>
+              <div className="photo-compare-pane">
+                <img src={compareB.url} alt="B"/>
+                <div className="photo-compare-cap">{compareB.date} · {compareB.label}</div>
+              </div>
+            </div>
+          )}
+          {(compareA || compareB) && (
+            <div style={{marginTop:10,fontSize:11,color:'var(--muted)',textAlign:'center'}}>
+              Tap A/B on photos to compare · <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)',fontSize:11,padding:'2px 8px'}} onClick={()=>{setCompareA(null);setCompareB(null);}}>clear</button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function Progress({ state, dispatch }) {
   const [weightInput, setWeightInput] = useState('');
   const [goalsModal, setGoalsModal]   = useState(false);
@@ -3677,6 +4035,10 @@ function Progress({ state, dispatch }) {
         </div>
         <button className="btn btn-secondary" onClick={()=>{ setGoalsDraft(state.goals); setGoalsModal(true); }}>Set Goals</button>
       </div>
+
+      <AchievementsSection state={state}/>
+      <WeeklyRecap state={state}/>
+      <PhotoJournal/>
 
       <WorkoutCalendar state={state}/>
 
